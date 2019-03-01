@@ -495,13 +495,14 @@ static int analyze_modifiers(struct efi_key_state *key_state)
 {
 	int c, mod = 0, ret = 0;
 
-	c = getc();
+	if (!term_get_char(&c))
+		goto out;
 
 	if (c != ';') {
 		ret = c;
 		if (c == '~')
 			goto out;
-		c = getc();
+		term_get_char(&c);
 	}
 	for (;;) {
 		switch (c) {
@@ -510,7 +511,7 @@ static int analyze_modifiers(struct efi_key_state *key_state)
 			mod += c - '0';
 		/* fall through */
 		case ';':
-			c = getc();
+			term_get_char(&c);
 			break;
 		default:
 			goto out;
@@ -553,7 +554,9 @@ static efi_status_t efi_cin_read_key(struct efi_key_data *key)
 		 * Xterm Control Sequences
 		 * https://www.xfree86.org/4.8.0/ctlseqs.html
 		 */
-		ch = getc();
+		if (!term_get_char(&ch))
+			return EFI_NOT_READY;
+
 		switch (ch) {
 		case cESC: /* ESC */
 			pressed_key.scan_code = 23;
@@ -563,12 +566,15 @@ static efi_status_t efi_cin_read_key(struct efi_key_data *key)
 			/* consider modifiers */
 			if (ch < 'P') {
 				set_shift_mask(ch - '0', &key->key_state);
-				ch = getc();
+				if (!term_get_char(&ch))
+					return EFI_NOT_READY;
 			}
 			pressed_key.scan_code = ch - 'P' + 11;
 			break;
 		case '[':
-			ch = getc();
+			if (!term_get_char(&ch))
+				return EFI_NOT_READY;
+
 			switch (ch) {
 			case 'A'...'D': /* up, down right, left */
 				pressed_key.scan_code = ch - 'A' + 1;
