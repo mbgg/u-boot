@@ -74,6 +74,7 @@ static int term_get_char(s32 *c)
 			return 1;
 
 	*c = getc();
+	printf("from getc %#x\n", *c);
 	return 0;
 }
 
@@ -495,6 +496,7 @@ static int analyze_modifiers(struct efi_key_state *key_state)
 {
 	int c, mod = 0, ret = 0;
 
+	printf("%s\n", __func__);
 	if (!term_get_char(&c))
 		goto out;
 
@@ -562,7 +564,8 @@ static efi_status_t efi_cin_read_key(struct efi_key_data *key)
 			pressed_key.scan_code = 23;
 			break;
 		case 'O': /* F1 - F4 */
-			ch = getc();
+			if (!term_get_char(&ch))
+				return EFI_NOT_READY;
 			/* consider modifiers */
 			if (ch < 'P') {
 				set_shift_mask(ch - '0', &key->key_state);
