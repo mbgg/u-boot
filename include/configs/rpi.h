@@ -74,6 +74,14 @@
 #define CONFIG_TFTP_TSIZE
 #endif
 
+/*
+ * RPi4 genet uses the generic phy support, set the
+ * timeout for auto-negotiation of the PHY in 50 ms units
+ * */
+#ifdef PHYLIB
+#define PHY_ANEG_TIMEOUT        20
+#endif
+
 /* Console configuration */
 #define CONFIG_SYS_CBSIZE		1024
 
