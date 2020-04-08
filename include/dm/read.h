@@ -789,14 +789,12 @@ static inline int dev_count_phandle_with_args(const struct udevice *dev,
 
 static inline int dev_read_addr_cells(const struct udevice *dev)
 {
-	/* NOTE: this call should walk up the parent stack */
-	return fdt_address_cells(gd->fdt_blob, dev_of_offset(dev));
+	return __ofnode_read_address_cells(dev_ofnode(dev));
 }
 
 static inline int dev_read_size_cells(const struct udevice *dev)
 {
-	/* NOTE: this call should walk up the parent stack */
-	return fdt_size_cells(gd->fdt_blob, dev_of_offset(dev));
+	return __ofnode_read_size_cells(dev_ofnode(dev));
 }
 
 static inline int dev_read_simple_addr_cells(const struct udevice *dev)

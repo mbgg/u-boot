@@ -660,6 +660,24 @@ int ofnode_read_pci_vendev(ofnode node, u16 *vendor, u16 *device);
  */
 int ofnode_read_addr_cells(ofnode node);
 
+static inline int __ofnode_read_address_cells(ofnode node)
+{
+	/* NOTE: this call walks up the parent stack */
+	int val = -FDT_ERR_NOTFOUND;
+	ofnode nd = node;
+
+	while (val == -FDT_ERR_NOTFOUND) {
+		val = fdt_cells(gd->fdt_blob, ofnode_to_offset(nd),
+				"#address-cells");
+		nd = ofnode_get_parent(nd);
+	}
+
+	if (val == -FDT_ERR_NOTFOUND)
+		return OF_ROOT_NODE_ADDR_CELLS_DEFAULT;
+	else
+		return val;
+}
+
 /**
  * ofnode_read_size_cells() - Get the number of size cells for a node
  *
@@ -670,6 +688,24 @@ int ofnode_read_addr_cells(ofnode node);
  * @return number of size cells this node uses
  */
 int ofnode_read_size_cells(ofnode node);
+
+static inline int __ofnode_read_size_cells(ofnode node)
+{
+	/* NOTE: this call walks up the parent stack */
+	int val = -FDT_ERR_NOTFOUND;
+	ofnode nd = node;
+
+	while (val == -FDT_ERR_NOTFOUND) {
+		val = fdt_cells(gd->fdt_blob, ofnode_to_offset(nd),
+				"#size-cells");
+		nd = ofnode_get_parent(nd);
+	}
+
+	if (val == -FDT_ERR_NOTFOUND)
+		return OF_ROOT_NODE_SIZE_CELLS_DEFAULT;
+	else
+		return val;
+}
 
 /**
  * ofnode_read_simple_addr_cells() - Get the address cells property in a node

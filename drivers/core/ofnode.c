@@ -697,16 +697,16 @@ int ofnode_read_addr_cells(ofnode node)
 {
 	if (ofnode_is_np(node))
 		return of_n_addr_cells(ofnode_to_np(node));
-	else  /* NOTE: this call should walk up the parent stack */
-		return fdt_address_cells(gd->fdt_blob, ofnode_to_offset(node));
+	else
+		return __ofnode_read_address_cells(node);
 }
 
 int ofnode_read_size_cells(ofnode node)
 {
 	if (ofnode_is_np(node))
 		return of_n_size_cells(ofnode_to_np(node));
-	else  /* NOTE: this call should walk up the parent stack */
-		return fdt_size_cells(gd->fdt_blob, ofnode_to_offset(node));
+	else
+		return __ofnode_read_size_cells(node);
 }
 
 int ofnode_read_simple_addr_cells(ofnode node)
