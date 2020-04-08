@@ -1121,6 +1121,8 @@ const char *fdt_stringlist_get(const void *fdt, int nodeoffset,
  */
 #define FDT_MAX_NCELLS		4
 
+int fdt_cells(const void *fdt, int nodeoffset, const char *name);
+
 /**
  * fdt_address_cells - retrieve address size for a bus represented in the tree
  * @fdt: pointer to the device tree blob
