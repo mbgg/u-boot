@@ -580,6 +580,8 @@ static efi_status_t efi_cin_read_key(struct efi_key_data *key)
 	if (ch >= 0x10000)
 		ch = '?';
 
+printf("%s 1 ch = %#x \t%c\n", __func__, ch, ch);
+
 	switch (ch) {
 	case 0x1b:
 		/*
@@ -587,12 +589,16 @@ static efi_status_t efi_cin_read_key(struct efi_key_data *key)
 		 * https://www.xfree86.org/4.8.0/ctlseqs.html
 		 */
 		ch = getc();
+
+printf("%s 2 ch = %#x \t%c\n", __func__, ch, ch);
 		switch (ch) {
 		case cESC: /* ESC */
 			pressed_key.scan_code = 23;
 			break;
 		case 'O': /* F1 - F4, End */
 			ch = getc();
+
+printf("%s 3 ch = %#x \t%c\n", __func__, ch, ch);
 			/* consider modifiers */
 			if (ch == 'F') { /* End */
 				pressed_key.scan_code = 6;
@@ -600,11 +606,14 @@ static efi_status_t efi_cin_read_key(struct efi_key_data *key)
 			} else if (ch < 'P') {
 				set_shift_mask(ch - '0', &key->key_state);
 				ch = getc();
+
 			}
 			pressed_key.scan_code = ch - 'P' + 11;
 			break;
 		case '[':
 			ch = getc();
+
+printf("%s 3 ch = %#x \t%c\n", __func__, ch, ch);
 			switch (ch) {
 			case 'A'...'D': /* up, down right, left */
 				pressed_key.scan_code = ch - 'A' + 1;
@@ -640,6 +649,7 @@ static efi_status_t efi_cin_read_key(struct efi_key_data *key)
 				break;
 			case '2':
 				ch = analyze_modifiers(&key->key_state);
+printf("%s 4 ch = %#x \t%c\n", __func__, ch, ch);
 				switch (ch) {
 				case '0'...'1': /* F9 - F10 */
 					pressed_key.scan_code = ch - '0' + 19;
@@ -737,6 +747,7 @@ static void efi_cin_check(void)
 	efi_status_t ret;
 
 	if (key_available) {
+		printf("%s signal event\n", __func__);
 		efi_signal_event(efi_con_in.wait_for_key);
 		return;
 	}
@@ -820,6 +831,7 @@ static efi_status_t EFIAPI efi_cin_read_key_stroke_ex(
 
 	EFI_ENTRY("%p, %p", this, key_data);
 
+//printf("EFI: Entry %s(%p, %p)\n", __func__, this, key_data);
 	/* Check parameters */
 	if (!this || !key_data) {
 		ret = EFI_INVALID_PARAMETER;
@@ -1038,6 +1050,7 @@ static efi_status_t EFIAPI efi_cin_read_key_stroke
 
 	EFI_ENTRY("%p, %p", this, key);
 
+//printf("EFI: Entry %s(%p, %p)\n", __func__, this, key);
 	/* Check parameters */
 	if (!this || !key) {
 		ret = EFI_INVALID_PARAMETER;
