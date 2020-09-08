@@ -121,6 +121,9 @@ choice
 	config SYS_USB_EVENT_POLL_VIA_CONTROL_EP
 		bool "Poll via control EP"
 
+config SYS_USB_EVENT_POLL_INIT_REPORT
+    bool "Interrupt polling but use report for first query"
+
 endchoice
 
 endif

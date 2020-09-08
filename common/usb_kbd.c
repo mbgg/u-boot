@@ -349,7 +349,7 @@ static int usb_kbd_irq(struct usb_device *dev)
 /* Interrupt polling */
 static inline void usb_kbd_poll_for_event(struct usb_device *dev)
 {
-#if defined(CONFIG_SYS_USB_EVENT_POLL)
+#if defined(CONFIG_SYS_USB_EVENT_POLL) || defined(CONFIG_SYS_USB_EVENT_POLL_INIT_REPORT)
 	struct usb_kbd_pdata *data = dev->privptr;
 
 	/* Submit an interrupt transfer request */
@@ -512,16 +512,18 @@ static int usb_kbd_probe_dev(struct usb_device *dev, unsigned int ifnum)
 	usb_set_idle(dev, iface->desc.bInterfaceNumber, 0, 0);
 #endif
 
-	debug("USB KBD: enable interrupt pipe...\n");
 #ifdef CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE
+	debug("USB KBD: enable interrupt pipe...\n");
 	data->intq = create_int_queue(dev, data->intpipe, 1,
 				      USB_KBD_BOOT_REPORT_SIZE, data->new,
 				      data->intinterval);
 	if (!data->intq) {
-#elif defined(CONFIG_SYS_USB_EVENT_POLL_VIA_CONTROL_EP)
+#elif defined(CONFIG_SYS_USB_EVENT_POLL_VIA_CONTROL_EP)  || defined(CONFIG_SYS_USB_EVENT_POLL_INIT_REPORT)
+	debug("USB KBD: get report...\n");
 	if (usb_get_report(dev, iface->desc.bInterfaceNumber,
 			   1, 0, data->new, USB_KBD_BOOT_REPORT_SIZE) < 0) {
 #else
+	debug("USB KBD: init message ...\n");
 	if (usb_int_msg(dev, data->intpipe, data->new, data->intpktsize,
 			data->intinterval, false) < 0) {
 #endif
