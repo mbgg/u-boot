@@ -553,6 +553,7 @@ static int label_boot(struct cmd_tbl *cmdtp, struct pxe_label *label)
 	else
 		do_bootz(cmdtp, 0, bootm_argc, bootm_argv);
 #endif
+	// TODO allow do_bootefi();
 	unmap_sysmem(buf);
 
 cleanup:
