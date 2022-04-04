@@ -6,6 +6,7 @@
  * Part of this source has been derived from the Linux USB
  * project.
  */
+#define DEBUG
 #include <common.h>
 #include <console.h>
 #include <dm.h>
@@ -440,7 +441,8 @@ static int usb_kbd_getc(struct stdio_dev *sdev)
 static int usb_kbd_probe_dev(struct usb_device *dev, unsigned int ifnum)
 {
 	struct usb_interface *iface;
-	struct usb_endpoint_descriptor *ep;
+	struct usb_endpoint_descriptor *ep = NULL;
+	struct usb_endpoint_descriptor *endp = NULL;
 	struct usb_kbd_pdata *data;
 	int epNum;
 
@@ -459,17 +461,21 @@ static int usb_kbd_probe_dev(struct usb_device *dev, unsigned int ifnum)
 		return 0;
 
 	for (epNum = 0; epNum < iface->desc.bNumEndpoints; epNum++) {
-		ep = &iface->ep_desc[epNum];
+		endp = &iface->ep_desc[epNum];
+		debug("check endpoint %d %#x\n", epNum, endp->bEndpointAddress);
 
 		/* Check if endpoint is interrupt IN endpoint */
-		if ((ep->bmAttributes & 3) != 3)
+		if ((endp->bmAttributes & 3) != 3)
 			continue;
 
-		if (ep->bEndpointAddress & 0x80)
-			break;
+		if (endp->bEndpointAddress & 0x80) {
+			debug("found IN endpoint %d %#x\n", epNum, endp->bEndpointAddress);
+			ep = endp;
+		} else
+			debug("found OUT endpoint %d %#x\n", epNum, endp->bEndpointAddress);
 	}
 
-	if (epNum == iface->desc.bNumEndpoints)
+	if (!ep)
 		return 0;
 
 	debug("USB KBD: found interrupt EP: 0x%x\n", ep->bEndpointAddress);
@@ -507,10 +513,17 @@ static int usb_kbd_probe_dev(struct usb_device *dev, unsigned int ifnum)
     !defined(CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE)
 	debug("USB KBD: set idle interval...\n");
 	usb_set_idle(dev, iface->desc.bInterfaceNumber, REPEAT_RATE / 4, 0);
+	// TODO delay here?
 #else
 	debug("USB KBD: set idle interval=0...\n");
 	usb_set_idle(dev, iface->desc.bInterfaceNumber, 0, 0);
 #endif
+
+
+// set leds here
+//	usb_set_report();
+//	if (usb_set_report(dev, iface->desc.bInterfaceNumber,
+//			   1, 0, data->new, USB_KBD_BOOT_REPORT_SIZE) < 0) {
 
 #ifdef CONFIG_SYS_USB_EVENT_POLL_VIA_INT_QUEUE
 	debug("USB KBD: enable interrupt pipe...\n");

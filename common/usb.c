@@ -707,6 +707,18 @@ int usb_get_report(struct usb_device *dev, int ifnum, unsigned char type,
 }
 
 /********************************************************************
+ * set report
+ */
+int usb_set_report(struct usb_device *dev, int ifnum, unsigned char type,
+		   unsigned char id, void *buf, int size)
+{
+	return usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
+			USB_REQ_SET_REPORT,
+			USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
+			(type << 8) + id, ifnum, buf, size, USB_CNTL_TIMEOUT);
+}
+
+/********************************************************************
  * get class descriptor
  */
 int usb_get_class_descriptor(struct usb_device *dev, int ifnum,
