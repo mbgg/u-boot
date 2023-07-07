@@ -13,6 +13,7 @@
 #include <common.h>
 #include <dm.h>
 #include <errno.h>
+#include <fdt_support.h>
 #include <timer.h>
 #include <asm/csr.h>
 
@@ -55,7 +56,17 @@ static int riscv_timer_probe(struct udevice *dev)
 	struct timer_dev_priv *uc_priv = dev_get_uclass_priv(dev);
 
 	/* clock frequency was passed from the cpu driver as driver data */
-	uc_priv->clock_rate = dev->driver_data;
+	u32 rate = dev->driver_data;
+
+	if (!rate && gd->fdt_blob) {            /* not called from CPU driver? */
+		rate = fdt_getprop_u32_default(gd->fdt_blob,
+				"/cpus", "timebase-frequency", 0);
+	}
+	uc_priv->clock_rate = rate;
+
+	/* timer uclass post_probe will later fail with -EINVAL. Hint at the cause! */
+	if (!rate)
+		log_err("riscv_timer_probe with clock rate 0\n");
 
 	return 0;
 }
@@ -64,10 +75,15 @@ static const struct timer_ops riscv_timer_ops = {
 	.get_count = riscv_timer_get_count,
 };
 
+static const struct udevice_id riscv_timer_ids[] = {
+	{ .compatible = "riscv,timer", },
+	{ }
+};
+
 U_BOOT_DRIVER(riscv_timer) = {
 	.name = "riscv_timer",
 	.id = UCLASS_TIMER,
+	.of_match = of_match_ptr(riscv_timer_ids),
 	.probe = riscv_timer_probe,
 	.ops = &riscv_timer_ops,
-	.flags = DM_FLAG_PRE_RELOC,
 };

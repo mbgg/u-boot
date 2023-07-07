@@ -6,6 +6,7 @@
 /dts-v1/;
 #include <dt-bindings/clock/starfive,jh7110-crg.h>
 #include <dt-bindings/reset/starfive,jh7110-crg.h>
+#include <dt-bindings/interrupt-controller/riscv-hart.h>
 
 / {
 	compatible = "starfive,jh7110";
@@ -161,6 +162,15 @@
 				};
 			};
 		};
+	};
+
+	timer {
+		compatible = "riscv,timer";
+		interrupts-extended = <&cpu0_intc HART_INT_S_TIMER>,
+				      <&cpu1_intc HART_INT_S_TIMER>,
+				      <&cpu2_intc HART_INT_S_TIMER>,
+				      <&cpu3_intc HART_INT_S_TIMER>,
+				      <&cpu4_intc HART_INT_S_TIMER>;
 	};
 
 	osc: oscillator {
