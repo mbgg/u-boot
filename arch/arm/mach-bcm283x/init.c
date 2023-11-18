@@ -116,6 +116,7 @@ static void rpi_update_mem_map(void) {}
 #endif
 
 unsigned long rpi_bcm283x_base = 0x3f000000;
+unsigned long rpi_bcm283x_mbox_addr;
 
 int arch_cpu_init(void)
 {
@@ -126,7 +127,7 @@ int arch_cpu_init(void)
 
 int mach_cpu_init(void)
 {
-	int ret, soc_offset;
+	int ret, soc_offset, mbox_offset;
 	u64 io_base, size;
 
 	rpi_update_mem_map();
@@ -142,6 +143,13 @@ int mach_cpu_init(void)
 		return ret;
 
 	rpi_bcm283x_base = io_base;
+	rpi_bcm283x_mbox_addr = rpi_bcm283x_base + 0xb880;
+
+	mbox_offset = fdt_node_offset_by_compatible((void*)gd->fdt_blob,
+		soc_offset, "brcm,bcm2835-mbox");
+	if (mbox_offset > 0)
+		rpi_bcm283x_mbox_addr =
+			fdt_get_base_address((void*)gd->fdt_blob, mbox_offset);
 
 	return 0;
 }

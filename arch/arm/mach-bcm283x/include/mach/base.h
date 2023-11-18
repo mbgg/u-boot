@@ -7,6 +7,7 @@
 #define _BCM283x_BASE_H_
 
 extern unsigned long rpi_bcm283x_base;
+extern unsigned long rpi_bcm283x_mbox_addr;
 
 #ifdef CONFIG_ARMV7_LPAE
 #ifdef CONFIG_TARGET_RPI_4_32B

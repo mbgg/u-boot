@@ -38,8 +38,8 @@
 
 /* Raw mailbox HW */
 
-#define BCM2835_MBOX_PHYSADDR ({ BUG_ON(!rpi_bcm283x_base); \
-				 rpi_bcm283x_base + 0x0000b880; })
+#define BCM2835_MBOX_PHYSADDR ({ BUG_ON(!rpi_bcm283x_mbox_addr); \
+                 rpi_bcm283x_mbox_addr; })
 
 struct bcm2835_mbox_regs {
 	u32 read;
