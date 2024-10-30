@@ -32,7 +32,7 @@ way to boot with U-Boot. The feature is extensible to different Operating
 Systems (such as Chromium OS) and devices (beyond just block and network
 devices). It supports EFI boot and EFI bootmgr too.
 
-Finally, standard boot supports the operation of :doc:`../vbe`.
+Finally, standard boot supports the operation of :doc:`../vbe.rst`.
 
 Bootflow
 --------
@@ -175,7 +175,7 @@ bootmeths are tried on each bootdev. If the variable is empty, the default
 ordering is used, based on the bootmeth sequence numbers, which can be
 controlled by aliases.
 
-The :ref:`usage/cmd/bootmeth:bootmeth command` (`bootmeth order`) operates in
+The :ref:`/doc/usage/cmd/bootmeth:bootmeth command` (`bootmeth order`) operates in
 the same way as setting this variable.
 
 Bootdev uclass
@@ -384,7 +384,7 @@ look like this::
             spi-max-frequency = <40000000>;
 
             bootdev {
-                compatible = "u-boot,sf-bootdev";
+                compatible = "u-boot,bootdev-sf";
                 offset = <0x2000>;
                 size = <0x1000>;
             };
@@ -457,16 +457,16 @@ Four commands are available:
 
 `bootdev`
     Allows listing of available bootdevs, selecting a particular one and
-    getting information about it. See :doc:`/usage/cmd/bootdev`
+    getting information about it. See :doc:`/doc/usage/cmd/bootdev`
 
 `bootflow`
     Allows scanning one or more bootdevs for bootflows, listing available
     bootflows, selecting one, obtaining information about it and booting it.
-    See :doc:`/usage/cmd/bootflow`
+    See :doc:`/doc/usage/cmd/bootflow`
 
 `bootmeth`
     Allow listing of available bootmethds, setting the order in which they are
-    tried and bootmeth specific configuration. See :doc:`/usage/cmd/bootmeth`
+    tried and bootmeth specific configuration. See :doc:`/doc/usage/cmd/bootmeth`
 
 `bootstd`
     Allow access to standard boot itself, so far only for listing images across
@@ -846,7 +846,7 @@ Other ideas:
 
 
 .. _distro_bootcmd: https://github.com/u-boot/u-boot/blob/master/include/config_distro_bootcmd.h
-.. _BootLoaderSpec: http://www.freedesktop.org/wiki/Specifications/BootLoaderSpec/
+.. _BootLoaderSpec: https://uapi-group.org/specifications/specs/boot_loader_specification/
 .. _distro_boot: https://github.com/u-boot/u-boot/blob/master/boot/distro.c
 .. _bootflow_h: https://github.com/u-boot/u-boot/blob/master/include/bootflow.h
 .. _migrate_patch: https://patchwork.ozlabs.org/project/uboot/patch/20230727215433.578830-2-sjg@chromium.org/
