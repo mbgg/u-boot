@@ -21,6 +21,7 @@
 #include <linux/bitfield.h>
 #include <linux/log2.h>
 #include <linux/iopoll.h>
+#include <reset.h>
 
 /* PCIe parameters */
 #define BRCM_NUM_PCIE_OUT_WINS				4
@@ -83,6 +84,8 @@ struct brcm_pcie {
 
 	int			gen;
 	bool			ssc;
+	struct reset_ctl	rescal;
+	struct reset_ctl	bridge_reset;
 	const struct brcm_pcie_cfg_data *pcie_cfg;
 };
 
@@ -147,6 +150,34 @@ static void brcm_pcie_perst_set_2712(struct brcm_pcie *pcie, u32 val)
 	writel(tmp, pcie->base + PCIE_MISC_PCIE_CTRL);
 }
 
+static void brcm_pcie_get_resets_dt(struct udevice *dev)
+{
+	struct brcm_pcie *pcie = dev_get_priv(dev);
+	int ret;
+
+	ret = reset_get_by_name(dev, "rescal", &pcie->rescal);
+	if (ret) {
+		printf("Unable to get rescal reset\n");
+		return;
+	}
+
+	ret = reset_get_by_name(dev, "bridge", &pcie->bridge_reset);
+	if (ret) {
+		printf("Unable to get bridge reset\n");
+		return;
+	}
+}
+
+static void brcm_pcie_do_reset(struct udevice *dev)
+{
+	struct brcm_pcie *pcie = dev_get_priv(dev);
+	int ret;
+
+	ret = reset_deassert(&pcie->rescal);
+	if (ret)
+		printf("failed to deassert 'rescal'\n");
+}
+
 static void brcm_pcie_bridge_sw_init_set_generic(struct brcm_pcie *pcie, u32 val)
 {
 	if (val)
@@ -155,6 +186,14 @@ static void brcm_pcie_bridge_sw_init_set_generic(struct brcm_pcie *pcie, u32 val
 	else
 		clrbits_le32(pcie->base + pcie->pcie_cfg->offsets[RGR1_SW_INIT_1],
 			     RGR1_SW_INIT_1_INIT_MASK);
+}
+
+static void brcm_pcie_bridge_sw_init_set_2712(struct brcm_pcie *pcie, u32 val)
+{
+	if (val)
+		reset_assert(&pcie->bridge_reset);
+	else
+		reset_deassert(&pcie->bridge_reset);
 }
 
 /**
@@ -414,6 +453,12 @@ static int brcm_pcie_probe(struct udevice *dev)
 	u32 tmp;
 
 	/*
+	 * Ensure rescal reset for BCM2712 is really disabled.
+	 */
+	if (pcie->pcie_cfg->type == BCM2712)
+		brcm_pcie_do_reset(dev);
+
+	/*
 	 * Reset the bridge, assert the fundamental reset. Note for some SoCs,
 	 * e.g. BCM7278, the fundamental reset should not be asserted here.
 	 * This will need to be changed when support for other SoCs is added.
@@ -611,6 +656,10 @@ static int brcm_pcie_of_to_plat(struct udevice *dev)
 		pcie->gen = max_link_speed;
 
 	pcie->pcie_cfg = (const struct brcm_pcie_cfg_data *)dev_get_driver_data(dev);
+
+	if (pcie->pcie_cfg->type == BCM2712)
+		brcm_pcie_get_resets_dt(dev);
+
 	return 0;
 }
 
@@ -645,7 +694,7 @@ static const struct brcm_pcie_cfg_data bcm2712_cfg = {
 	.offsets	= pcie_offsets_bcm2712,
 	.type		= BCM2712,
 	.perst_set	= brcm_pcie_perst_set_2712,
-	.bridge_sw_init_set = brcm_pcie_bridge_sw_init_set_generic,
+	.bridge_sw_init_set = brcm_pcie_bridge_sw_init_set_2712,
 	.rc_mode	= brcm_pcie_rc_mode,
 };
 
